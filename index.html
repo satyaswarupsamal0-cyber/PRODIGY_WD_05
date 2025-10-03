@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      background: linear-gradient(to bottom, #c4c715, #00f2fe);
+      color: #333;
+      margin: 0;
+      background: url("https://img.freepik.com/free-vector/flat-design-monsoon-season-clouds-illustration_23-2149424294.jpg") no-repeat center center/cover;
+
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #164983;
+      color: white;
+      cursor: pointer;
+      border-radius: 9px;
+    }
+
+    button:hover {
+      background-color: #0b6fcc;
+    }
+
+    .weather-info {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      text-align: center;
+      min-width: 300px;
+      font-size: large;
+    }
+
+    .weather-info img {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Weather App</h1>
+  <input type="text" id="locationInput" placeholder="Enter city name...">
+  <button onclick="getWeather()">Get Weather</button>
+  <button onclick="getWeatherByLocation()">Use My Location</button>
+
+  <div class="weather-info" id="weatherInfo">
+    <p>Weather data will appear here</p>
+  </div>
+
+  <script>
+    const apiKey = '64d577948e9b95950794c22829a98e20'; 
+    function getWeather() {
+      const city = document.getElementById('locationInput').value;
+      if (!city) return alert("Please enter a city name");
+
+      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+        .then(response => response.json())
+        .then(data => displayWeather(data))
+        .catch(err => alert("City not found!"));
+    }
+
+    function getWeatherByLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
+            .then(response => response.json())
+            .then(data => displayWeather(data))
+            .catch(err => alert("Unable to fetch weather data"));
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function displayWeather(data) {
+      const weatherDiv = document.getElementById('weatherInfo');
+
+      if (data.cod !== 200) {
+        weatherDiv.innerHTML = `<p>${data.message}</p>`;
+        return;
+      }
+
+      const { name, main, weather, wind } = data;
+      weatherDiv.innerHTML = `
+        <h2>${name}</h2>
+        <img src="https://openweathermap.org/img/wn/${weather[0].icon}@2x.png" alt="${weather[0].description}">
+        <p><strong>Condition:</strong> ${weather[0].main} (${weather[0].description})</p>
+        <p><strong>Temperature:</strong> ${main.temp}°C</p>
+        <p><strong>Feels Like:</strong> ${main.feels_like}°C</p>
+        <p><strong>Humidity:</strong> ${main.humidity}%</p>
+        <p><strong>Wind Speed:</strong> ${wind.speed} m/s</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
